@@ -53,6 +53,6 @@ jobs:
         script: |
           cd /home/ubuntu/odegano-frontend
         
-          docker compose down --rmi all
-          docker compose pull
-          docker compose up -d --remove-orphans
+          sudo docker compose down --rmi all
+          sudo docker compose pull
+          sudo docker compose up -d --remove-orphans
