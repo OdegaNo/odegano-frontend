@@ -54,8 +54,6 @@ jobs:
     steps:
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
-      env:
-        FRONTEND_IMAGE_TAG: ${{ github.sha }}
       with:
         host: ${{ secrets.SERVER_HOST }}
         port: '22'
@@ -64,8 +62,9 @@ jobs:
         script: |
           cd /home/ubuntu/odegano-frontend
 
-          export FRONTEND_IMAGE_TAG=${GITHUB_SHA}
+          FRONTEND_IMAGE_TAG=${{ github.sha }}
 
-          sudo docker compose down --remove-orphans
-          sudo docker compose pull
-          sudo docker compose up -d --remove-orphans
+          # docker-compose 실행 시 바로 참조
+          sudo FRONTEND_IMAGE_TAG=${FRONTEND_IMAGE_TAG} docker compose down --remove-orphans
+          sudo FRONTEND_IMAGE_TAG=${FRONTEND_IMAGE_TAG} docker compose pull
+          sudo FRONTEND_IMAGE_TAG=${FRONTEND_IMAGE_TAG} docker compose up -d --remove-orphans
