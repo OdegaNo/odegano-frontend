@@ -25,7 +25,7 @@ jobs:
         cache: 'pnpm'
 
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --frozen-lockfile --force
 
     - name: Build frontend
       run: pnpm run build
@@ -42,7 +42,9 @@ jobs:
         context: .
         file: Dockerfile
         push: true
-        tags: tkddmskr/odegano-frontend:latest
+        tags: |
+          tkddmskr/odegano-frontend:${{ github.sha }}
+          tkddmskr/odegano-frontend:latest
         no-cache: true
 
   deploy:
@@ -59,6 +61,9 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
           cd /home/ubuntu/odegano-frontend
-          sudo docker compose down --rmi all
+
+          sudo docker compose down --rmi all --remove-orphans
+
           sudo docker compose pull
+
           sudo docker compose up -d --remove-orphans
