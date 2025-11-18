@@ -59,10 +59,10 @@ jobs:
         port: '22'
         username: ${{ secrets.SERVER_USERNAME }}
         key: ${{ secrets.SERVER_SSH_KEY }}
+        env:
+          FRONTEND_IMAGE_TAG: ${{ github.sha }}
         script: |
           cd /home/ubuntu/odegano-frontend
-
-          export FRONTEND_IMAGE_TAG=${GITHUB_SHA}
 
           sudo docker compose down --remove-orphans
           sudo docker compose pull
