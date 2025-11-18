@@ -10,12 +10,15 @@ interface SelectUiBodyProps {
   description: string;
   nextButtonLabel: string;
   onNext: () => void;
-  options?: Array<{
-    label: string;
-  }>;
+  options?: Array<{ label: string }>;
   onOptionButton?: (option: string) => void;
   children?: React.ReactNode;
   selectedOption?: string | null;
+  onChatButtonClick?: () => void;
+  actionArea?: React.ReactNode;
+  contentFooter?: React.ReactNode;
+  chatToggleLabel?: string;
+  isNextDisabled?: boolean;
 }
 
 export default function SelectUiBody(
@@ -29,6 +32,8 @@ export default function SelectUiBody(
     props.options && props.options.length > 0
       ? !props.selectedOption
       : false;
+
+  const nextDisabled = props.isNextDisabled ?? disableNext;
 
   return (
     <Background>
@@ -45,26 +50,35 @@ export default function SelectUiBody(
         <Content>
           {props.children}
         </Content>
+        {props.contentFooter}
         <ButtonWrapper>
-          {props.options &&
-            <ChoiceOptionWrapper>
-              {props.options.map((option, index) => (
-                <ChoiceOptionButton
-                  key={index}
-                  onClick={() => handleOptionClick(option.label)}
-                  selected={props.selectedOption === option.label}
-                >
-                  {option.label}
-                </ChoiceOptionButton>
-              ))}
-            </ChoiceOptionWrapper>
-          }
-          <Button
-            label={props.nextButtonLabel}
-            onClick={props.onNext}
-            disabled={disableNext}
-          />
-          <TextButton>또는 챗봇이랑 대화하기</TextButton>
+          {props.actionArea ?? (
+            <>
+              {props.options &&
+                <ChoiceOptionWrapper>
+                  {props.options.map((option, index) => (
+                    <ChoiceOptionButton
+                      key={index}
+                      onClick={() => handleOptionClick(option.label)}
+                      selected={props.selectedOption === option.label}
+                    >
+                      {option.label}
+                    </ChoiceOptionButton>
+                  ))}
+                </ChoiceOptionWrapper>
+              }
+              <Button
+                label={props.nextButtonLabel}
+                onClick={props.onNext}
+                disabled={nextDisabled}
+              />
+              {props.onChatButtonClick && (
+                <ChatToggleButton type="button" onClick={props.onChatButtonClick}>
+                  {props.chatToggleLabel ?? '또는 챗봇이랑 대화하기'}
+                </ChatToggleButton>
+              )}
+            </>
+          )}
         </ButtonWrapper>
       </ContentWrapper>
     </Background>
@@ -91,12 +105,11 @@ const ContentWrapper = styled.div`
 
 const ButtonWrapper = styled.div`
   width: 100%;
-  
   margin-top: 1rem;
   display: flex;
   justify-content: center;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 1rem;
 `;
 
@@ -129,13 +142,26 @@ const Description = styled.div`
 const Content = styled.div`
   width: 100%;
   height: 55vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 `;
 
-const TextButton = styled.span`
+const ChatToggleButton = styled.button`
+  border: 0;
+  background: transparent;
   color: #F1F1F1;
-  font-size:14px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: opacity 0.2s ease;
 
-`
+  &:hover,
+  &:focus-visible {
+    opacity: 0.8;
+  }
+`;
 
 const ChoiceOptionWrapper = styled.div`
   display: flex;

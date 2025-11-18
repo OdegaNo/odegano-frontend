@@ -1,17 +1,20 @@
 import styled, { keyframes } from 'styled-components';
+import { useNavigate } from 'react-router';
 import Background from '@/components/common/Background'
 import image from '@/assets/images/map-3d-image.png'
 import logo from '@/assets/images/logo.png'
 import Button from '@/components/common/Button'
 
 export default function Root() {
+  const navigate = useNavigate();
+
   return (
     <Background>
       <ContentWrapper>
         <Logo src={logo} alt='logo'/>
         <LandImage src={image} alt="land" />
         <ButtonWrapper>
-          <Button label='시작하기'/>
+          <Button label='시작하기' onClick={() => navigate('/question')} />
         </ButtonWrapper>
       </ContentWrapper>
     </Background>
