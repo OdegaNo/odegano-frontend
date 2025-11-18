@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: tkddmskr/odegano-frontend:latest
+    image: tkddmskr/odegano-frontend:${FRONTEND_IMAGE_TAG}
     container_name: odegano-frontend
     restart: unless-stopped
     networks:
@@ -10,10 +10,9 @@ services:
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://api.odegano.kro.kr
-    volumes:
-      - frontend-static:/usr/share/nginx/html
+    depends_on:
+      - nginx
 
-  
   nginx:
     image: nginx:alpine
     container_name: odegano-nginx
@@ -26,16 +25,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./ssl:/etc/nginx/ssl:ro
-      - frontend-static:/usr/share/nginx/html:ro
-    depends_on:
-      - frontend
 
 networks:
   odegano-network:
     driver: bridge
-    driver_opts:
-      com.docker.network.driver.mtu: 1400
-
-volumes:
-  postgres_data:
-  frontend-static:
