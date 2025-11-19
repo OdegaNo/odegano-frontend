@@ -9,6 +9,9 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     margin: 0;
   }
+  .leaflet-control-attribution{
+    display: none;
+  }
 `;
 
 export default GlobalStyle;

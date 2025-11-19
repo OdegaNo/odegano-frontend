@@ -10,4 +10,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      onwarn() {
+        // 빌드 경고 전부 무시
+      }
+    }
+  }
 })

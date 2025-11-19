@@ -19,6 +19,9 @@ interface SelectUiBodyProps {
   contentFooter?: React.ReactNode;
   chatToggleLabel?: string;
   isNextDisabled?: boolean;
+  isActionHidden?: boolean;
+  optionVariant?: 'chip' | 'card';
+  contentMinHeight?: string;
 }
 
 export default function SelectUiBody(
@@ -34,6 +37,8 @@ export default function SelectUiBody(
       : false;
 
   const nextDisabled = props.isNextDisabled ?? disableNext;
+  const optionVariant = props.optionVariant ?? 'chip';
+  const contentMinHeight = props.contentMinHeight ?? '55vh';
 
   return (
     <Background>
@@ -47,20 +52,21 @@ export default function SelectUiBody(
             {props.description}
           </Description>
         </Header>
-        <Content>
+        <Content $minHeight={contentMinHeight}>
           {props.children}
         </Content>
         {props.contentFooter}
-        <ButtonWrapper>
+        <ButtonWrapper $isHidden={props.isActionHidden}>
           {props.actionArea ?? (
             <>
               {props.options &&
-                <ChoiceOptionWrapper>
+                <ChoiceOptionWrapper $variant={optionVariant}>
                   {props.options.map((option, index) => (
                     <ChoiceOptionButton
                       key={index}
                       onClick={() => handleOptionClick(option.label)}
                       selected={props.selectedOption === option.label}
+                      $variant={optionVariant}
                     >
                       {option.label}
                     </ChoiceOptionButton>
@@ -85,7 +91,6 @@ export default function SelectUiBody(
   )
 }
 
-
 const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -103,7 +108,7 @@ const ContentWrapper = styled.div`
   }
 `;
 
-const ButtonWrapper = styled.div`
+const ButtonWrapper = styled.div<{ $isHidden?: boolean }>`
   width: 100%;
   margin-top: 1rem;
   display: flex;
@@ -111,6 +116,10 @@ const ButtonWrapper = styled.div`
   flex-direction: column;
   align-items: stretch;
   gap: 1rem;
+  transition: opacity 0.32s ease, transform 0.32s ease;
+  transform: translateY(${({ $isHidden }) => ($isHidden ? '70px' : '0')});
+  opacity: ${({ $isHidden }) => ($isHidden ? 0 : 1)};
+  pointer-events: ${({ $isHidden }) => ($isHidden ? 'none' : 'auto')};
 `;
 
 
@@ -139,9 +148,9 @@ const Description = styled.div`
   color: #666;
 `
 
-const Content = styled.div`
+const Content = styled.div<{ $minHeight: string }>`
   width: 100%;
-  height: 55vh;
+  min-height: ${({ $minHeight }) => $minHeight};
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -163,43 +172,105 @@ const ChatToggleButton = styled.button`
   }
 `;
 
-const ChoiceOptionWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding-bottom: 4px;
+interface ChoiceOptionWrapperProps {
+  $variant: 'chip' | 'card';
+}
 
-  max-width: 100%;
+const ChoiceOptionWrapper = styled.div<ChoiceOptionWrapperProps>`
+  ${({ $variant }) => $variant === 'card'
+    ? `
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+    `
+    : `
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 4px;
+      max-width: 100%;
+    `}
 
   &::-webkit-scrollbar {
-    height: 6px;
+    ${({ $variant }) => ($variant === 'card' ? 'width: 6px;' : 'height: 6px;')}
+  }
+
+  &::-webkit-scrollbar-thumb {
+    ${({ $variant }) => ($variant === 'card'
+      ? 'background: rgba(255, 255, 255, 0.25); border-radius: 999px;'
+      : 'background: rgba(0, 0, 0, 0.15); border-radius: 3px;')}
   }
 `;
 
 interface ChoiceOptionButtonProps {
   selected: boolean;
+  $variant: 'chip' | 'card';
 }
 
 const ChoiceOptionButton = styled.button<ChoiceOptionButtonProps>`
-  display: inline-flex;
-  padding: 10px 20px;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  border-radius: 10px;
-  background: ${props => props.selected ? '#EA8C98' : '#F6D7DB'};
+  ${({ $variant, selected }) => $variant === 'card'
+    ? `
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      border: 1px solid ${selected ? '#EA8C98' : 'rgba(255, 255, 255, 0.22)'};
+      background: ${selected ? 'rgba(234, 140, 152, 0.25)' : 'rgba(255, 255, 255, 0.08)'};
+      box-shadow: ${selected ? '0 12px 26px rgba(234, 140, 152, 0.25)' : '0 8px 18px rgba(0, 0, 0, 0.15)'};
+      color: #fff;
+      font-weight: 600;
+      font-family: "Wanted Sans";
+      font-size: 0.95rem;
+      line-height: 1.3;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease, background 0.2s ease;
+      text-align: left;
 
+      &:hover {
+        transform: translateY(-2px);
+        border-color: #EA8C98;
+      }
 
-  color: ${props => props.selected ? '#FFF' : '#484848'};
-  font-weight: ${props => props.selected ? '600' : '500'};
-  font-family: "Wanted Sans";
-  font-size: 14px;
-  font-style: normal;
-  
-  line-height: normal;
+      &::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid ${selected ? '#EA8C98' : 'rgba(255, 255, 255, 0.4)'};
+        background: ${selected ? '#EA8C98' : 'transparent'};
+        flex-shrink: 0;
+        transition: background 0.2s ease, border 0.2s ease;
+      }
 
-  transition: 0.5s background;
+      @media (max-width: 600px) {
+        font-size: 0.9rem;
+        padding: 0.9rem 1.25rem;
+      }
+    `
+    : `
+      display: inline-flex;
+      padding: 10px 20px;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 10px;
+      background: ${selected ? '#EA8C98' : '#F6D7DB'};
+      color: ${selected ? '#FFF' : '#484848'};
+      font-weight: ${selected ? '600' : '500'};
+      font-family: "Wanted Sans";
+      font-size: 14px;
+      line-height: normal;
+      transition: 0.3s background;
+    `}
 `

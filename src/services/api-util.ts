@@ -1,35 +1,87 @@
+import axios, { type AxiosRequestConfig } from 'axios'
+
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://api.odegano.kro.kr'
 
-async function request(path: string, init?: RequestInit) {
-  const url = `${BASE_URL}${path}`
-  const res = await fetch(url, init)
-  let json: any = null
+const client = axios.create({
+  baseURL: BASE_URL,
+})
+
+type ApiResponse<T = any> = {
+  status: number
+  data: T | null
+}
+
+async function request<T = any>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
   try {
-    json = await res.json()
-  } catch (e) {
-    // ignore json parse errors
+    const response = await client.request<T>(config)
+    
+    return { status: response.status, data: response.data }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return {
+        status: error.response?.status ?? 0,
+        data: error.response?.data ?? null,
+      }
+    }
+
+    return { status: 0, data: null }
   }
-  return { status: res.status, data: json }
 }
 
 export async function postTraits(places: string) {
-  const path = `/traits?places=${encodeURIComponent(places)}`
-  return request(path, { method: 'POST' })
+  return request({
+    url: '/traits',
+    method: 'POST',
+    params: { places },
+  })
 }
 
 export async function postPerpose(reason: string, id: string) {
-  const path = `/perpose?reason=${encodeURIComponent(reason)}&id=${encodeURIComponent(id)}`
-  return request(path, { method: 'POST' })
+  return request({
+    url: '/perpose',
+    method: 'POST',
+    params: { reason, id },
+  })
 }
 
 export async function postPeople(id: string, people: string) {
-  const path = `/people?id=${encodeURIComponent(id)}&people=${encodeURIComponent(people)}`
-  return request(path, { method: 'POST' })
+  return request({
+    url: '/people',
+    method: 'POST',
+    params: { id, people },
+  })
 }
 
 export async function postDay(id: string, day: string) {
-  const path = `/day?id=${encodeURIComponent(id)}&day=${encodeURIComponent(day)}`
-  return request(path, { method: 'POST' })
+  return request({
+    url: '/day',
+    method: 'POST',
+    params: { id, day },
+  })
 }
 
-export default { postTraits, postPerpose, postPeople, postDay }
+export async function postRecommend(id: string, limit: number = 5) {
+  return request({
+    url: '/recommend',
+    method: 'POST',
+    params: { id, limit },
+  })
+}
+
+export async function getPlans(id: string) {
+  return request({
+    url: `/planner/${id}`,
+    method: 'GET'
+  })
+}
+
+export async function postPlanner(id: string, body: unknown) {
+  return request({
+    url: '/planner',
+    method: 'POST',
+    params: { id },
+    data: body,
+  })
+}
+
+export default { postTraits, postPerpose, postPeople, postDay, postRecommend, postPlanner, getPlans }
